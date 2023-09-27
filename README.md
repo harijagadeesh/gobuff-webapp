@@ -1,39 +1,50 @@
-![Github Actions](https://github.com/remast/gobuff_realworld_example_app/workflows/CI%20Build/badge.svg)
+# GoLang Backend Application Deployment
 
-# ![RealWorld Example App](logo.png)
+**App:** https://github.com/remast/gobuff_realworld_example_app
 
-> ### Buffalo codebase containing real world examples (CRUD, auth, advanced patterns, etc) that adheres to the [RealWorld](https://github.com/gothinkster/realworld) spec and API.
+**Application Endpoint:** https://web.haridurgajagadeesh.com/
+
+## Pipeline Workflow
+
+- Trigger: The pipeline will be triggered whenever changes are merged into the main branch of the repository.
+
+- Build Docker Image:
+
+    - The pipeline starts by using the Dockerfile provided to build a Docker image. The Dockerfile sets up a Node.js environment, installs dependencies, and prepares the backend application.
+    - The resulting Docker image contains all the necessary dependencies and the application code.
+
+- Publish to AWS ECR:
+
+    - After successfully building the Docker image, the pipeline proceeds to publish it to AWS ECR. ECR is a fully managed Docker container registry provided by Amazon Web Services.
+    - The published Docker image is stored in the AWS ECR repository, ready for deployment.
+
+- Deployment on AWS EKS Cluster:
+
+    - The final step of the pipeline involves deploying the application to an AWS EKS cluster.
+    - The deployment process utilizes Helm charts, which are packages of pre-configured Kubernetes resources.
+    - The pipeline will deploy the application to the AWS EKS cluster using the specified Helm charts, ensuring a consistent and repeatable deployment process.
+
+![alt text](CICDFlow.jpg)
+
+## Overview about the EKS and Postgres setup.
+- The EKS cluster is designed to be publicly accessible. This means that the cluster is reachable from the internet, allowing external requests to reach the applications deployed within it.
+- For simplicity, the application is exposed using a ALB Ingress controller. The load balancer acts as the entry point for incoming traffic and routes requests to the appropriate backend application running on the EKS cluster. The Application is exposed using HTTPS endpoint and the ALB is integrated to support both route53 record addition and ACM certificate manamgement.
+- To manage the cluster and the underlying infrastructure, Terraform is utilized. Terraform is an open-source infrastructure provisioning tool that enables infrastructure-as-code workflows.
+- The Terraform code for deploying the EKS cluster and related resources can be found in the terraform-eks-module folder.
+- By utilizing Terraform, the infrastructure for the EKS cluster, including the VPC (Virtual Private Cloud) and other necessary components, can be defined as code. This approach allows for reproducibility and version control of the infrastructure setup.
+- The Terraform code likely includes the necessary AWS provider configuration, resource definitions for the VPC, subnets, security groups, and the EKS cluster itself.
+- The Terraform code may also include any additional resources required, such as IAM roles, policies, and any necessary dependencies for the EKS cluster.
+- Executing the Terraform code provisions the required infrastructure resources on AWS, creating the EKS cluster and associated components.
+- Postgres is used as a DB backend and this is created using terraform.
 
 
-### [Demo](https://gobuff-realworld-example-app.herokuapp.com/)&nbsp;&nbsp;&nbsp;&nbsp;[RealWorld](https://github.com/gothinkster/realworld)
 
+## Application overview
 
-This codebase was created to demonstrate a fully fledged fullstack application built with **[Buffalo](http://gobuffalo.io)** including CRUD operations, authentication, routing, pagination, and more.
-
-We've gone to great lengths to adhere to the **[Buffalo](http://gobuffalo.io)** community styleguides & best practices.
-
-For more information on how to this works with other frontends/backends, head over to the [RealWorld](https://github.com/gothinkster/realworld) repo.
-
-# Getting started
-
-## 1. Start the app
-
-	buffalo dev
-
-## 2. Start the database
-
-	docker run --name rw_db -e POSTGRES_DB=gobuff_realworld_example_app_development -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -p 5432:5432 -d postgres
-
-## 3. Update the database
-
-	buffalo pop migrate
-
-If you point your browser to [http://127.0.0.1:3000](http://127.0.0.1:3000) you should see the home page.
-
-## Running the tests
-
-	buffalo test --force-migrations
-	buffalo test models -m "ArticleFavorite" --force-migrations
+- The Application get the DB connection string from K8S secrets.
+- The Application is Endpoint is hosted using ALB ingress, the ingress has Rout53 addition to automatically add the DNS hostname entry for th ALB CNAME.
+- The Ingress also binds the HTTPS endpoint using ACM certificate.
+- The application uses GoBuff framework used for hosting webapps.
 
 # How it works
 
@@ -42,5 +53,3 @@ If you point your browser to [http://127.0.0.1:3000](http://127.0.0.1:3000) you 
 ## Authentication
 Authentication is generated by [Auth Generator for Buffalo](https://github.com/gobuffalo/buffalo-auth).
 
-## Pagination of Articles
-Uses [pop](https://github.com/gobuffalo/pop)'s [paginator](https://github.com/gobuffalo/pop/blob/master/paginator.go) as described in [Pagination](https://github.com/gobuffalo/tags/wiki/Pagination).
