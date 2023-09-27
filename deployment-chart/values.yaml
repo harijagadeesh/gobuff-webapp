@@ -1,0 +1,23 @@
+replicaCount: 1
+
+image:
+  repository: 842701997647.dkr.ecr.us-east-1.amazonaws.com/gobuff-webapp
+  pullPolicy: IfNotPresent
+  tag: "10"
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: false
+  annotations: {}
+  name: ""
+
+service:
+  type: NodePort
+  port: 80
+  targetPort: 3000
+
+ingress:
+  certificateArn: "arn:aws:acm:us-east-1:842701997647:certificate/ccaa0092-f513-4867-aa42-1b91e71f1aa6"
+  hostname: "web.haridurgajagadeesh.com"
